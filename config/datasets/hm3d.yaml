@@ -1,0 +1,52 @@
+data_path: "/workspace/datasets/hm3d/00824"
+output_folder: "/workspace/lexi-sg/output"
+log_level: "WARNING"
+model_devices:
+  reconstruction: 0
+  semantic: 0
+
+reconstruction:
+  method: mapanything
+  pcd_voxel_size: 0.04   # saved room point clouds; loop_closure.voxel_size is separate
+  batch_size: 60
+room_segmentation:
+  method: doorway
+  transitions_as_nodes: true    # false: fold doorway frames into adjacent rooms (fewer nodes, faster; see PROGRESS.md)
+  boundary_pairs: 2
+  room_prompt_list: ["office", "kitchen", "bedroom", "stairs", "doorway", "bathroom", "living room"]
+  enter_confidence: 0.3
+  exit_confidence: 0.3
+  enter_threshold: 5
+  exit_threshold: 5
+loop_closure:
+  room_threshold: 0.9
+  num_matches: 40
+  image_threshold: 0.9
+  iou_threshold: 0.3
+  voxel_size: 0.3
+  dist: 0.1
+object_segmentation:
+  enabled: true
+  config_path: service.yaml
+  feature_encoder: dino  # dino | clip (clip needed for OpenLex3D export)
+  # Link objects across rooms within max_hops in the room graph, using the
+  # within-room rule (voxel IoU, then CLIP similarity) in the world frame.
+  # Writes segmented_pcd_rooms.pcd, segmented_pcd_cross_room.pcd and
+  # cross_room_objects.json; segmented_pcd.pcd is unchanged.
+  cross_room:
+    enabled: true
+    max_hops: 2
+    voxel_size: 0.05
+    overlap_threshold: 0.2
+    clip_similarity_threshold: 0.7
+    min_points: 50
+    room_margin: 0.3    # metres added to a room's bounding box when selecting candidates
+
+# Optional priors passed to MapAnything.
+inputs:
+  depth: false
+  poses: false
+  depth_scale: 1000.0            # depth PNG value -> metres divisor
+  intrinsics: [540, 540, 540, 360]   # fx, fy, cx, cy (Habitat default 90 deg hfov at 1080x720)
+  pose_convention: opengl        # camera axes of pose/*.txt: opencv (+Y down, +Z fwd) or opengl (+Y up, -Z fwd)
+  poses_are_world_to_cam: false  # set true if pose files store world-to-camera instead of cam-to-world

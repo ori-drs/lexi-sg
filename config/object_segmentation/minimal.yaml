@@ -1,0 +1,18 @@
+dataset: scannetpp
+scene_name: 0a7cc12c0e
+data_path: "/workspace/datasets/scannetpp"
+
+subsample: 1
+input_image_max_side: -1
+frame_sampling_mode: stride  # count | stride
+num_uniform_frames: 240
+uniform_frame_stride: 5
+object_segmentation:
+  config_path: service.yaml
+
+defaults:
+  - override hydra/hydra_logging: disabled
+  - override hydra/job_logging: disabled
+  - _self_
+
+log_dir: ${hydra:runtime.cwd}/logs/${now:%Y%m%d_%H%M%S}_object_segmentation_${scene_name}

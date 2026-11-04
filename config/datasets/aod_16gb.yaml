@@ -1,0 +1,41 @@
+# aod.yaml with a smaller batch size for 16 GB GPUs.
+data_path: "/workspace/datasets/aod/ff-1"
+output_folder: "/workspace/lexi-sg/output"
+log_level: "WARNING"
+model_devices:
+  reconstruction: 0
+  semantic: 0
+
+reconstruction:
+  method: mapanything
+  pcd_voxel_size: 0.04   # saved room point clouds; loop_closure.voxel_size is separate
+  batch_size: 40
+room_segmentation:
+  method: corridor
+  transitions_as_nodes: true   # false: fold doorway frames into adjacent rooms; true: transitions are nodes
+  boundary_pairs: 3
+  room_prompt_list: ["office", "kitchen", "corridor"]
+  enter_confidence: 1
+  exit_confidence: 0.5
+  enter_threshold: 5
+  exit_threshold: 2
+loop_closure:
+  room_threshold: 0.85
+  num_matches: 70
+  image_threshold: 0.9
+  iou_threshold: 0.1
+  voxel_size: 0.04
+  dist: 0.1
+object_segmentation:
+  enabled: true
+  config_path: service.yaml
+  feature_encoder: dino  # dino | clip (clip needed for OpenLex3D export)
+
+# Optional priors passed to MapAnything. 
+inputs:
+  depth: false
+  poses: false
+  depth_scale: 1000.0            # depth PNG value -> metres divisor
+  intrinsics: null               # [fx, fy, cx, cy] or a 3x3; required if depth is enabled
+  pose_convention: opencv        # camera axes of pose/*.txt: opencv (+Y down, +Z fwd) or opengl (+Y up, -Z fwd)
+  poses_are_world_to_cam: false  # set true if pose files store world-to-camera instead of cam-to-world

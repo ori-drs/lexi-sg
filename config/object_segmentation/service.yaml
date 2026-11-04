@@ -1,0 +1,111 @@
+object_segmentation:
+  color_seed: 0
+  geometry:
+    shared_geometry_voxel_size: 0.01
+  stages:
+    detect:
+      save_visualizations: True
+      method: grounded_sam
+      model: "grounded_sam"
+      post_filter:
+        mask_ios_threshold: 0.8
+      grounded_sam:
+        enable_ram: True
+        gsa_path: null
+        ram_repo_root: null
+        ram_checkpoint_path: null
+        grounding_dino_config_path: null
+        grounding_dino_checkpoint_path: null
+        sam2_model_id: "facebook/sam2-hiera-large"
+        sam2_config_path: null
+        sam2_checkpoint_path: null
+        sam2_apply_postprocessing: True
+        confidence_threshold: 0.25
+        sam2_iou_threshold: 0.9
+        box_threshold: 0.25
+        text_threshold: 0.25
+        nms_threshold: 0.5
+        max_box_area_ratio: 0.8
+        cpu_fallback_on_oom: True
+        cpu_fallback_max_side: 1280
+        add_background_classes: False
+        add_classes: null
+        remove_substrings: null
+      amg:
+        apply_postprocessing: True
+        max_side: 0
+        oom_retry_max_side: 1280
+        points_per_side: 32
+        points_per_batch: 32
+        pred_iou_thresh: 0.7
+        stability_score_thresh: 0.92
+        stability_score_offset: 0.7
+        mask_threshold: 0.0
+        box_nms_thresh: 0.7
+        crop_n_layers: 0
+        crop_nms_thresh: 0.7
+        crop_overlap_ratio: 0.3413333333333333
+        crop_n_points_downscale_factor: 1
+        point_grids: null
+        min_mask_region_area: 0
+        output_mode: "binary_mask"
+        use_m2m: False
+        multimask_output: True
+    track:
+      save_visualizations: True
+      method: sam2
+      model: "sam2-hiera-large"
+      conf_threshold: 0.8
+      best_frame:
+        weights:
+          center: 0.0
+          area: 1.0
+          fill_ratio: 0.5
+      sam2:
+        apply_postprocessing: True
+        vos_optimized: False
+        offload_state_to_cpu: True
+        offload_video_to_cpu: True
+      bidirectional:
+        adjacent_frames: 5
+        overlap_resolution: merge
+        iou_threshold: 0.8
+        ios_threshold: 0.8
+        covering_mask_threshold: 0.8
+        covering_mask_ios_threshold: 0.8
+        ios_prune_removes_smaller: True
+        min_overlap_frames: 2
+        clear_cuda_cache_on_add: True
+      min_detections: 1
+    merge:
+      save_visualizations: True
+      max_backproj_depth: -1.0
+      object_pcd_per_frame_filter:
+        enabled: True
+        voxel_size: 0.01
+        dbscan:
+          enabled: True
+          eps: 0.02
+          min_points: 10
+          min_cluster_size: 10
+          keep_largest_cluster: True
+      object_pcd_voxel_size: 0.01
+      overlap_merge:
+        voxel_size: 0.05
+        overlap_threshold: 0.2
+        min_points: 50
+      clip_aware_overlap_merge:
+        voxel_size: 0.05
+        overlap_threshold: 0.2
+        min_points: 50
+        clip_similarity_threshold: 0.7
+    clip:
+      top_n_frames: 3
+      mask_pad_ratio: 1.5
+      mask_pad_pixel: -1
+      mask_mode: "original"
+      save_outputs: True
+      save_openlex3d: True
+    eval:
+      device: cuda
+      save_object_labels: True

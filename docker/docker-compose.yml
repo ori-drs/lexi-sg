@@ -1,0 +1,61 @@
+name: lexisg
+
+services:
+  lexisg:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        ENV_NAME: lexisg
+
+    image: lexisg:dev
+    container_name: lexisg-dev
+
+    working_dir: /workspace/lexi-sg
+
+    stdin_open: true
+    tty: true
+    ipc: host
+    shm_size: 16gb
+    gpus: all
+
+    user: "${USER_UID:-0}:${USER_GID:-0}"
+
+    environment:
+      HOME: /home/lexisg
+
+      CONDA_DEFAULT_ENV: lexisg
+      CUDA_HOME: /usr/local/cuda
+
+      # project paths
+      GSA_PATH: /workspace/lexi-sg/thirdparty/Grounded-Segment-Anything
+      RAM_REPO_ROOT: /workspace/lexi-sg/thirdparty/recognize-anything
+
+      GROUNDING_DINO_CONFIG_PATH: /workspace/lexi-sg/thirdparty/Grounded-Segment-Anything/GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py
+      GROUNDING_DINO_CHECKPOINT_PATH: /workspace/lexi-sg/checkpoints/groundingdino_swint_ogc.pth
+      RAM_CHECKPOINT_PATH: /workspace/lexi-sg/checkpoints/ram_swin_large_14m.pth
+      LEXISG_DINOV3_BACKBONE_WEIGHTS: /workspace/lexi-sg/checkpoints/dinov3_vitl16_pretrain_lvd1689m-8aa4cbdd.pth
+      LEXISG_DINOV3_TEXT_WEIGHTS: /workspace/lexi-sg/checkpoints/dinov3_vitl16_dinotxt_vision_head_and_text_encoder-a442d8f5.pth
+
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility,graphics
+
+      PYTHONPATH: /workspace/lexi-sg
+      HF_HOME: /workspace/lexi-sg/.cache/huggingface
+      TORCH_HOME: /workspace/lexi-sg/.cache/torch
+      MPLCONFIGDIR: /tmp/matplotlib
+
+      REPLICA_DATA_PATH: /workspace/datasets/Replica
+      SCANNETPP_DATA_PATH: /workspace/datasets/scannetpp
+      HM3D_DATA_PATH: /workspace/datasets/hm3d
+
+      PIPELINE_MODULE: lexisg.tasks.object_segmentation.pipeline
+
+    volumes:
+      - ..:/workspace/lexi-sg
+      - ../../../data:/workspace/datasets
+      - ../checkpoints:/workspace/lexi-sg/checkpoints
+      - ../../../.cache:/workspace/lexi-sg/.cache
+      - ../../../.cache/conda-pkgs:/opt/conda/pkgs
+
+    command: ["/bin/bash"]
